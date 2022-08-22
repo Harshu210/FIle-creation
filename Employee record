@@ -1,0 +1,279 @@
+#include<stdio.h>
+#include<stdlib.h>
+struct employee
+{
+ int employee_id;
+ char employee_name[30];
+ float employee_salary;
+}emplo;
+
+//    FUNCTION TO INSERT RECORDS TO THE FILE
+void insert()
+{
+ FILE *fp;
+ fp = fopen("Record", "a");
+ printf("Enter the Employee id :");
+ scanf("%d", &emplo.employee_id);
+ printf("Enter the Employee Name :");
+ scanf("%s",emplo.employee_name);
+ printf("Enter the Employee Salary :");
+ scanf("%f", &emplo.employee_salary);
+ fwrite(&emplo, sizeof(emplo), 1, fp);
+ fclose(fp);
+}
+
+//    FUNCTION TO DISPLAY RECORDS
+void disp()
+{
+ FILE *fp1;
+ fp1 = fopen("Record", "r");
+ printf("\nEmployee id\tName\tSalary\n");
+ while (fread(&emplo, sizeof(emplo), 1, fp1))
+ printf("   %d, \t%s,\t%f\n",emplo.employee_id, emplo.employee_name, emplo.employee_salary);
+ fclose(fp1);
+}
+int avlemployee_id(int id)
+{
+ FILE *fp;
+ int c = 0;
+ fp = fopen("Record", "r");
+ while (!feof(fp))
+ {
+  fread(&emplo, sizeof(emplo), 1, fp);
+
+  if (id == emplo.employee_id)
+  {
+   fclose(fp);
+   return 1;
+  }
+ }
+ fclose(fp);
+ return 0;
+}
+
+//    FUNCTION TO SEARCH THE GIVEN RECORD
+void search()
+{
+ FILE *fp2;
+ int r, s, avl;
+ printf("\nEnter the Employee id of the one you want to know the details :");
+ scanf("%d", &r);
+ avl = avlemployee_id(r);
+ if (avl == 0)
+  printf("sorry, deatils of the employee with %d aren't in our records.\n",r);
+ else
+ {
+  fp2 = fopen("Record", "r");
+  while (fread(&emplo, sizeof(emplo), 1, fp2))
+  {
+   s = emplo.employee_id;
+   if (s == r)
+   {
+    printf("\nEmployee id = %d", emplo.employee_id);
+    printf("\nName    = %s", emplo.employee_name);
+    printf("\nMark    = %.2f\n", emplo.employee_salary);
+   }
+  }
+  fclose(fp2);
+ }
+}
+
+//    FUNCTION TO DELETE A RECORD
+void deletefile()
+{
+ FILE *fpo;
+ FILE *fpt;
+ int r, s;
+ printf("Enter the id of employee you want to delete :");
+ scanf("%d", &r);
+ if (avlemployee_id(r) == 0)
+  printf("sorry, deatils of the employee with %d aren't in our records\n", r);
+ else
+ {
+  fpo = fopen("Record", "r");
+  fpt = fopen("TempFile", "w");
+  while (fread(&emplo, sizeof(emplo), 1, fpo))
+  {
+   s = emplo.employee_id;
+   if (s != r)
+    fwrite(&emplo, sizeof(emplo), 1, fpt);
+  }
+  fclose(fpo);
+  fclose(fpt);
+  fpo = fopen("Record", "w");
+  fpt = fopen("TempFile", "r");
+  while (fread(&emplo, sizeof(emplo), 1, fpt))
+   fwrite(&emplo, sizeof(emplo), 1, fpo);
+  printf("\nRECORD DELETED\n");
+  fclose(fpo);
+  fclose(fpt);
+ }
+}
+
+//    FUNCTION TO UPDATE THE RECORD
+void update()
+{
+ int avl;
+ FILE *fpt;
+ FILE *fpo;
+ int s, r, ch;
+ printf("Enter id of employee you want to update:");
+ scanf("%d", &r);
+ avl = avlemployee_id(r);
+ if (avl == 0)
+ {
+  printf("sorry, deatils of the employee with %d aren't in our records", r);
+ }
+ else
+ {
+  fpo = fopen("Record", "r");
+  fpt = fopen("TempFile", "w");
+  while (fread(&emplo, sizeof(emplo), 1, fpo))
+  {
+   s = emplo.employee_id;
+   if (s != r)
+    fwrite(&emplo, sizeof(emplo), 1, fpt);
+   else
+   {
+    printf("\n\t1. Update Name of Employee with id  %d", r);
+    printf("\n\t2. Update Salary of Employee with id %d", r);
+    printf("\n\t3. Update both Name and Salary of Employee with id %d", r);
+    printf("\nEnter your choice:");
+    scanf("%d", &ch);
+    switch (ch)
+    {
+    case 1:
+     printf("Enter Name:");
+     scanf("%s",emplo.employee_name);
+     break;
+    case 2:
+     printf("Enter Salary : ");
+     scanf("%f", &emplo.employee_salary);
+     break;
+    case 3:
+     printf("Enter Name: ");
+     scanf("%s",emplo.employee_name);
+     printf("Enter Salary: ");
+     scanf("%f", &emplo.employee_salary);
+     break;
+    default:
+     printf("Invalid Selection");
+     break;
+    }
+    fwrite(&emplo, sizeof(emplo), 1, fpt);
+   }
+  }
+  fclose(fpo);
+  fclose(fpt);
+  fpo = fopen("Record", "w");
+  fpt = fopen("TempFile", "r");
+  while (fread(&emplo, sizeof(emplo), 1, fpt))
+  {
+   fwrite(&emplo, sizeof(emplo), 1, fpo);
+  }
+  fclose(fpo);
+  fclose(fpt);
+  printf("RECORD UPDATED");
+ }
+}
+
+//FUNCTION TO SORT THE RECORD 
+void sort()
+{
+ int a[20], count = 0, i, j, t, c;
+ FILE *fpo;
+ fpo = fopen("Record", "r");
+ while (fread(&emplo, sizeof(emplo), 1, fpo))
+ {
+  a[count] = emplo.employee_id;
+  count++;
+ }
+ c = count;
+ for (i = 0; i<count - 1; i++)
+ {
+  for (j = i + 1; j<count; j++)
+  {
+   if (a[i]>a[j])
+   {
+    t = a[i];
+    a[i] = a[j];
+    a[j] = t;
+   }
+  }
+ }
+ printf("Employee id\tName\t\tSalary\n");
+ count = c;
+ for (i = 0; i<count; i++)
+ {
+  rewind(fpo);
+  while (fread(&emplo, sizeof(emplo), 1, fpo))
+  {
+   if (a[i] == emplo.employee_id)
+    printf("\n %d\t\t %s \t %2f",emplo.employee_id, emplo.employee_name, emplo.employee_salary);
+  }
+
+ }
+}
+//    FUNCTION TO CHECK GIVEN ROLL NO IS AVAILABLE 
+//FUNCTION TO CHECK THE FILE IS EMPTY OR NOT
+int empty()
+{
+ int c = 0;
+ FILE *fp;
+ fp = fopen("Record", "r");
+ while (fread(&emplo, sizeof(emplo), 1, fp))
+  c = 1;
+ fclose(fp);
+ return c;
+}
+// MAIN PROGRAM
+void main()
+{
+ int c, emp;
+ do
+ {
+  printf("\n\t---Select your choice---------\n");
+  printf("\n\t1. INSERT\n\t2. DISPLAY\n\t3. SEARCH");
+  printf("\n\t4. DELETE\n\t5. UPDATE\n\t6. SORT");
+  printf("\n\t7. EXIT");
+  printf("\n\n------------------------------------------\n");
+  printf("\nEnter your choice:");
+  scanf("%d", &c);
+  printf("\n");
+  switch (c)
+  {
+  case 1:
+   insert();
+   break;
+  case 2:
+   emp = empty();
+   if (emp == 0)
+    printf("\nThe file is EMPTY\n");
+   else
+    disp();
+   break;
+  case 3:
+   search();
+   break;
+  case 4:
+   deletefile();
+   break;
+  case 5:
+   update();
+   break;
+  case 6:
+   emp = empty();
+   if (emp == 0)
+    printf("\n The file is EMPTY\n");
+   else
+    sort();
+   break;
+  case 7:
+   exit(1);
+   break;
+  default:
+   printf("\nYour choice is wrong\nPlease try again...\n");
+   break;
+  }
+ } while (c != 7);
+}
